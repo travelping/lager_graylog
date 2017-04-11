@@ -79,7 +79,8 @@ property(Key, Value) ->
 -spec make_printable(any()) -> iolist().
 make_printable(A) when is_atom(A) -> atom_to_list(A);
 make_printable(P) when is_pid(P) -> pid_to_list(P);
-make_printable(L) when is_list(L) orelse is_binary(L) -> L;
+make_printable(L) when is_list(L) -> L;
+make_printable(L) when is_binary(L) -> binary_to_list(L);
 make_printable(Other) -> io_lib:format("~p",[Other]).
 
 get_metadata(Key, Metadata, Default) ->

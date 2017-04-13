@@ -40,8 +40,13 @@ output(Prop,Msg) when is_atom(Prop) ->
     Key = make_printable(Prop),
     RawValue = get_metadata(Prop,Metadata,"Undefined"),
     if
+        % NOTE:
+        % nestded structures are not supported for now
+        % they are represented as strings
+        %is_map(RawValue) ->
+            %convert_map(make_printable(Key), RawValue);
         is_map(RawValue) ->
-            convert_map(make_printable(Key), RawValue);
+            property(Key, io_lib:format("~p", [RawValue]));
         true ->
             Value = make_printable(get_metadata(Prop,Metadata,"Undefined")),
             property(Key, Value)    
@@ -54,27 +59,28 @@ output({Prop,Default},Msg) when is_atom(Prop) ->
 output(Other,_) -> make_printable(Other).
 
 %% converts and formats a map into a list with keys and values, prefixes keys with name of original key
--spec convert_map(term(), map()) -> iolist().
-convert_map(Key, M) ->
-    Fun = fun(K, V, Acc) ->
-        PrefixedKey = [Key, $_, make_printable(K)],
-        if
-            is_map(V) ->
-                E = convert_map(PrefixedKey, V);
-            true ->
-                E = [property(PrefixedKey, make_printable(V))]
-        end,
-        join_lists(E, Acc)
-    end,
-    maps:fold(Fun, [], M).
+%-spec convert_map(term(), map()) -> iolist().
+%convert_map(Key, M) ->
+    %Fun = fun(K, V, Acc) ->
+        %PrefixedKey = [Key, $_, make_printable(K)],
+        %if
+            %is_map(V) ->
+                %E = convert_map(PrefixedKey, V);
+            %true ->
+                %E = [property(PrefixedKey, make_printable(V))]
+        %end,
+        %join_lists(E, Acc)
+    %end,
+    %maps:fold(Fun, [], M).
 
-join_lists(L, []) -> L;
-join_lists(L, A) -> [L, $, , A].
+%join_lists(L, []) -> L;
+%join_lists(L, A) -> [L, $, , A].
 
 %% create string '"key": "value"' from key and value
 -spec property(string(), string()) -> string().
 property(Key, Value) ->
-    [$" , Key , $" , $: , $" , Value , $"].
+    EscapedValue = re:replace(Value, "\"", "\\\\\\\"", [global, {return, list}]),
+    [$" , Key , $" , $: , $" , EscapedValue , $"].
 
 -spec make_printable(any()) -> iolist().
 make_printable(A) when is_atom(A) -> atom_to_list(A);

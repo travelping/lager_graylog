@@ -96,7 +96,7 @@ handle_call(_Request, State) ->
     {ok, ok, State}.
 
 %% @private
-handle_event(Message,#state{level=L,formatter=Formatter,format_config=FormatConfig} = State) ->
+handle_event(Message,#state{level=_L,formatter=Formatter,format_config=FormatConfig} = State) ->
     {log, MessageInner} = Message,
     Msg=Formatter:format(MessageInner,FormatConfig),
     ok=gen_udp:send(State#state.socket,State#state.address,State#state.port,Msg),
